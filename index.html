@@ -56,7 +56,20 @@
             background-color: #e58e26;
             color: #fff;
         }
-        .user-panel { display: flex; align-items: center; gap: 12px; }
+        .user-panel { display: flex; align-items: center; gap: 8px; }
+        .btn-deposit {
+            background-color: #85bc24;
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+        .btn-withdraw {
+            background-color: #383d44;
+            color: #fff;
+            border: 1px solid #4f5660;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
         .balance-box {
             background: #23262a;
             padding: 4px 10px;
@@ -68,6 +81,7 @@
         .logout-btn {
             background: none; border: none; color: #ff4d4d;
             cursor: pointer; font-size: 12px; padding: 0; text-decoration: underline;
+            margin-left: 4px;
         }
         
         /* Вкладки навигации (Линия / Профиль) */
@@ -118,16 +132,24 @@
         }
         .btn-submit { width: 100%; background: #4a90e2; color: white; padding: 10px; margin-top: 10px; }
 
-        /* Матчи и Стили элементов */
+        /* Панель фильтров по видам спорта */
         .filter-bar {
-            background: #2d3136; padding: 10px; border-radius: 4px;
-            margin-bottom: 15px; display: flex; align-items: center; font-size: 12px; color: #aaa;
+            background: #2d3136; padding: 8px 10px; border-radius: 4px;
+            margin-bottom: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px;
         }
+        .filter-title { color: #aaa; font-weight: bold; margin-right: 4px; text-transform: uppercase; }
         .filter-tag {
-            background: #1b1e22; padding: 4px 8px; border-radius: 3px;
-            color: #fff; margin-left: 10px; display: flex; align-items: center; gap: 5px; border: 1px solid #383d44;
+            background: #1b1e22; padding: 6px 10px; border-radius: 4px;
+            color: #aaa; border: 1px solid #383d44; cursor: pointer; display: flex; align-items: center; gap: 5px;
+            transition: all 0.2s;
         }
-        .filter-tag::before { content: "●"; color: #f5fe00; }
+        .filter-tag:hover { border-color: #f5fe00; color: #fff; }
+        .filter-tag.active {
+            background: #23262a; border-color: #f5fe00; color: #f5fe00; font-weight: bold;
+        }
+        .filter-tag::before { content: "●"; color: #4f5660; font-size: 8px; }
+        .filter-tag.active::before { color: #f5fe00; }
+
         .section-title {
             font-size: 14px; text-transform: uppercase; color: #94a3b8;
             margin-bottom: 10px; font-weight: 600; border-left: 3px solid #f5fe00; padding-left: 8px;
@@ -237,6 +259,8 @@
         </div>
 
         <div class="user-panel" id="auth-user" style="display: none;">
+            <button class="btn btn-deposit" onclick="actionDeposit()">Пополнить</button>
+            <button class="btn btn-withdraw" onclick="actionWithdraw()">Вывести</button>
             <div class="balance-box"><span class="balance-value" id="user-balance">0 COIN</span></div>
             <button class="logout-btn" onclick="logout()">Выйти</button>
         </div>
@@ -251,10 +275,14 @@
     <!-- ВКЛАДКА 1: ЛИНИЯ МАТЧЕЙ -->
     <div id="tab-line" class="tab-content active">
         <div class="filter-bar">
-            ЛИНИИ
-            <div class="filter-tag">CyberSport CS2</div>
+            <div class="filter-title">ЛИНИИ:</div>
+            <div class="filter-tag active" id="filter-cs2" onclick="setSportFilter('cs2')">CS2</div>
+            <div class="filter-tag" id="filter-dota2" onclick="setSportFilter('dota2')">Dota 2</div>
+            <div class="filter-tag" id="filter-football" onclick="setSportFilter('football')">Football</div>
+            <div class="filter-tag" id="filter-basketball" onclick="setSportFilter('basketball')">Basketball</div>
+            <div class="filter-tag" id="filter-tennis" onclick="setSportFilter('tennis')">Tennis</div>
         </div>
-        <div class="section-title">Матчи из линии</div>
+        <div class="section-title" id="current-sport-title">Матчи из линии</div>
         <div class="matches-list" id="matches-container">
             <div style='padding:20px;text-align:center;color:#aaa;'>Загрузка линии...</div>
         </div>
@@ -345,13 +373,32 @@
 
         let currentUser = JSON.parse(sessionStorage.getItem('session_user')) || null;
         let basket = []; 
+        let currentSport = 'cs2'; // Текущий выбранный фильтр
 
-        const betboomMatchesFallback = [
-            { id: 101, team1: "Cloud9", team2: "BetBoom Team", event: "BetBoom Dacha 2026", time: "LIVE", odd1: 1.90, odd2: 1.80 },
-            { id: 102, team1: "Natus Vincere", team2: "G2 Esports", event: "PGL Major", time: "Сегодня, 18:00", odd1: 1.55, odd2: 2.45 },
-            { id: 103, team1: "Team Spirit", team2: "FaZe Clan", event: "IEM Dallas", time: "Сегодня, 21:30", odd1: 1.40, odd2: 2.90 },
-            { id: 104, team1: "Virtus.pro", team2: "MOUZ", event: "ESL Pro League", time: "Завтра, 14:00", odd1: 2.15, odd2: 1.70 }
-        ];
+        // Раздельные демонстрационные данные по категориям
+        const sportsFallbackData = {
+            cs2: [
+                { id: 101, team1: "Cloud9", team2: "BetBoom Team", event: "BetBoom Dacha 2026", time: "LIVE", odd1: 1.90, odd2: 1.80 },
+                { id: 102, team1: "Natus Vincere", team2: "G2 Esports", event: "PGL Major", time: "Сегодня, 18:00", odd1: 1.55, odd2: 2.45 },
+                { id: 103, team1: "Team Spirit", team2: "FaZe Clan", event: "IEM Dallas", time: "Сегодня, 21:30", odd1: 1.40, odd2: 2.90 }
+            ],
+            dota2: [
+                { id: 201, team1: "Team Spirit", team2: "Gaimin Gladiators", event: "The International", time: "LIVE", odd1: 1.65, odd2: 2.10 },
+                { id: 202, team1: "BetBoom Team", team2: "Team Liquid", event: "Riyadh Masters", time: "Сегодня, 19:30", odd1: 1.85, odd2: 1.85 }
+            ],
+            football: [
+                { id: 301, team1: "Real Madrid", team2: "Barcelona", event: "La Liga", time: "Сегодня, 22:00", odd1: 2.10, odd2: 3.20 },
+                { id: 302, team1: "Manchester City", team2: "Liverpool", event: "Premier League", time: "Завтра, 17:00", odd1: 1.75, odd2: 4.10 }
+            ],
+            basketball: [
+                { id: 401, team1: "Boston Celtics", team2: "Los Angeles Lakers", event: "NBA", time: "Завтра, 04:30", odd1: 1.35, odd2: 3.25 },
+                { id: 402, team1: "Real Madrid Basket", team2: "Anadolu Efes", event: "EuroLeague", time: "Сегодня, 20:45", odd1: 1.50, odd2: 2.60 }
+            ],
+            tennis: [
+                { id: 501, team1: "Alcaraz C.", team2: "Sinner J.", event: "Wimbledon", time: "LIVE", odd1: 1.80, odd2: 1.95 },
+                { id: 502, team1: "Djokovic N.", team2: "Medvedev D.", event: "US Open", time: "Завтра, 16:00", odd1: 1.45, odd2: 2.75 }
+            ]
+        };
 
         const API_URL = "http://localhost:8000/api/matches"; 
 
@@ -369,6 +416,18 @@
                 document.getElementById('bet-slip').style.display = 'none';
                 renderHistory();
             }
+        }
+
+        // Установка и переключение фильтра видов спорта
+        function setSportFilter(sportCode) {
+            currentSport = sportCode;
+            document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+            document.getElementById(`filter-${sportCode}`).classList.add('active');
+            
+            const titles = { cs2: 'CS2 Линия', dota2: 'Dota 2 Линия', football: 'Футбольная линия', basketball: 'Баскетбольная линия', tennis: 'Теннисная линия' };
+            document.getElementById('current-sport-title').innerText = titles[sportCode] || 'Матчи из линии';
+
+            loadActualMatches(false);
         }
 
         function updateUI() {
@@ -418,8 +477,16 @@
         
         function logout() { currentUser = null; sessionStorage.removeItem('session_user'); updateUI(); renderHistory(); }
 
+        function actionDeposit() { alert('Окно пополнения баланса в разработке.'); }
+        function actionWithdraw() { alert('Окно вывода средств в разработке.'); }
+
         function displayMatches(matches) {
             const container = document.getElementById('matches-container');
+            if(matches.length === 0) {
+                container.innerHTML = `<div style='padding:20px;text-align:center;color:#aaa;'>В данный момент нет доступных матчей.</div>`;
+                return;
+            }
+
             container.innerHTML = matches.map(m => {
                 const activeBet = basket.find(b => b.matchId === m.id);
                 const isW1Active = activeBet && activeBet.outcome === 1;
@@ -588,12 +655,15 @@
 
         async function loadActualMatches(initial = true) {
             try {
-                const response = await fetch(API_URL);
+                // Пытаемся стучаться на бэкенд с параметром категории
+                const response = await fetch(`${API_URL}?sport=${currentSport}`);
                 if (!response.ok) throw new Error();
                 const fetchedMatches = await response.json();
                 displayMatches(fetchedMatches);
             } catch (error) {
-                displayMatches(betboomMatchesFallback);
+                // Если бэкенд недоступен (например, на GitHub Pages), берем подготовленный Fallback массив под текущий спорт
+                const localData = sportsFallbackData[currentSport] || [];
+                displayMatches(localData);
             }
             if(initial) renderSlip();
         }
