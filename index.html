@@ -16,7 +16,7 @@
             margin: 0;
             padding: 0;
             font-size: 14px;
-            padding-bottom: 120px; /* Отступ для купона снизу */
+            padding-bottom: 140px; /* Отступ для купона снизу */
         }
         .navbar {
             background-color: #2d3136;
@@ -24,7 +24,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 3px solid #f5fe00; /* Желтый цвет */
+            border-bottom: 3px solid #f5fe00;
         }
         .brand {
             font-weight: bold;
@@ -84,7 +84,7 @@
             margin-left: 4px;
         }
         
-        /* Вкладки навигации (Линия / Профиль) */
+        /* Вкладки навигации */
         .tabs-nav {
             display: flex;
             background: #23262a;
@@ -109,11 +109,11 @@
             background: #2d3136;
         }
 
-        /* Контентные секции */
+        /* Контент */
         .tab-content { display: none; padding: 15px; }
         .tab-content.active { display: block; }
 
-        /* Модальные окна */
+        /* Модалки */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.8); z-index: 1000;
@@ -132,7 +132,7 @@
         }
         .btn-submit { width: 100%; background: #4a90e2; color: white; padding: 10px; margin-top: 10px; }
 
-        /* Панель фильтров по видам спорта */
+        /* Фильтры */
         .filter-bar {
             background: #2d3136; padding: 8px 10px; border-radius: 4px;
             margin-bottom: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px;
@@ -178,7 +178,7 @@
         .odds-btn .outcome-type { color: #aaa; font-size: 11px; }
         .odds-btn .odds-val { color: #f5fe00; font-weight: bold; }
 
-        /* Купон ставок (Нижняя панель) */
+        /* Купон */
         .bet-slip-panel {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: #23262a; border-top: 2px solid #383d44;
@@ -218,7 +218,7 @@
         }
         .btn-bet-submit:disabled { background: #4f5660; color: #888; cursor: not-allowed; }
 
-        /* СТИЛИ ДЛЯ ЛИЧНОГО КАБИНЕТА */
+        /* Профиль */
         .profile-card {
             background: #2d3136; padding: 15px; border-radius: 6px;
             border: 1px solid #383d44; margin-bottom: 20px;
@@ -249,15 +249,12 @@
 </head>
 <body>
 
-    <!-- Навигация верхняя -->
     <div class="navbar">
         <div class="brand">CRYPTO<span>BET</span></div>
-        
         <div class="auth-buttons" id="auth-guest">
             <button class="btn btn-login" onclick="openModal('login-modal')">Вход</button>
             <button class="btn btn-register" onclick="openModal('register-modal')">Рега</button>
         </div>
-
         <div class="user-panel" id="auth-user" style="display: none;">
             <button class="btn btn-deposit" onclick="actionDeposit()">Пополнить</button>
             <button class="btn btn-withdraw" onclick="actionWithdraw()">Вывести</button>
@@ -266,13 +263,12 @@
         </div>
     </div>
 
-    <!-- Переключатель вкладок -->
     <div class="tabs-nav">
         <button class="tab-btn active" id="tab-line-btn" onclick="switchTab('line')">Линия</button>
         <button class="tab-btn" id="tab-profile-btn" onclick="switchTab('profile')">Мои пари</button>
     </div>
 
-    <!-- ВКЛАДКА 1: ЛИНИЯ МАТЧЕЙ -->
+    <!-- ЛИНИЯ -->
     <div id="tab-line" class="tab-content active">
         <div class="filter-bar">
             <div class="filter-title">ЛИНИИ:</div>
@@ -282,54 +278,43 @@
             <div class="filter-tag" id="filter-basketball" onclick="setSportFilter('basketball')">Basketball</div>
             <div class="filter-tag" id="filter-tennis" onclick="setSportFilter('tennis')">Tennis</div>
         </div>
-        <div class="section-title" id="current-sport-title">Матчи из линии</div>
+        <div class="section-title" id="current-sport-title">CS2 Линия</div>
         <div class="matches-list" id="matches-container">
-            <div style='padding:20px;text-align:center;color:#aaa;'>Загрузка линии...</div>
+            <div style='padding:20px;text-align:center;color:#aaa;'>Загрузка...</div>
         </div>
     </div>
 
-    <!-- ВКЛАДКА 2: ЛИЧНЫЙ КАБИНЕТ И ИСТОРИЯ ПАРИ -->
+    <!-- ПРОФИЛЬ -->
     <div id="tab-profile" class="tab-content">
         <div class="section-title">Личный кабинет</div>
-        
-        <!-- Панель профиля если не авторизован -->
         <div id="profile-unauth" style="text-align: center; padding: 4px 0; color: #aaa;">
-            <p>Пожалуйста, войдите в аккаунт, чтобы просмотреть профиль и историю заключенных пари.</p>
-            <button class="btn btn-register" onclick="openModal('login-modal')">Войти прямо сейчас</button>
+            <p>Войдите в аккаунт для просмотра истории пари.</p>
+            <button class="btn btn-register" onclick="openModal('login-modal')">Войти</button>
         </div>
-
-        <!-- Панель профиля если авторизован -->
         <div id="profile-auth" style="display: none;">
             <div class="profile-card">
-                <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;" id="profile-email">user@domain.com</div>
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;" id="profile-email"></div>
                 <div style="color: #aaa;">Статус аккаунта: <span style="color:#85bc24; font-weight: bold;">Подтвержден</span></div>
             </div>
-
             <div class="section-title">История Ваших пари</div>
-            <div class="history-list" id="history-container">
-                <!-- Пари загрузятся сюда -->
-            </div>
+            <div class="history-list" id="history-container"></div>
         </div>
     </div>
 
-    <!-- Купон ставок (Фиксированный снизу) -->
+    <!-- КУПОН -->
     <div class="bet-slip-panel" id="bet-slip">
         <div class="slip-header" onclick="toggleSlip()">
-            <div class="slip-title">
-                Купон пари <span class="slip-badge" id="slip-count">0</span>
-            </div>
+            <div class="slip-title">Купон пари <span class="slip-badge" id="slip-count">0</span></div>
             <div id="slip-type-text" style="color: #f5fe00; font-weight: bold; font-size: 12px;">Ординар</div>
         </div>
         <div class="slip-body" id="slip-body">
             <div id="slip-items-container"></div>
-            
             <div class="slip-summary">
                 <div class="summary-row"><span>Тип пари:</span><strong id="summary-type">Ординар</strong></div>
                 <div class="summary-row"><span>Общий коэффициент:</span><strong style="color: #f5fe00;" id="summary-odds">0.00</strong></div>
                 <div class="summary-row"><span>Возможный выигрыш:</span><strong style="color: #85bc24;" id="summary-win">0 COIN</strong></div>
-                
                 <div class="slip-input-group">
-                    <input type="number" id="bet-amount" class="slip-input" placeholder="Сумма пари" value="100" oninput="calculateSlip()">
+                    <input type="number" id="bet-amount" class="slip-input" placeholder="Сумма" value="100" oninput="calculateSlip()">
                     <button class="btn-bet-submit" id="place-bet-btn" onclick="submitBetSlip()" disabled>Заключить пари</button>
                 </div>
             </div>
@@ -338,10 +323,10 @@
 
     <!-- Модалки -->
     <div class="modal-overlay" id="login-modal">
-        <div class="modal"><div class="modal-body"><form onsubmit="handleLogin(event)"><div class="form-group"><label>Email</label><input type="email" id="login-email" class="form-control" required placeholder="name@mail.com"></div><div class="form-group"><label>Пароль</label><input type="password" id="login-password" class="form-control" required placeholder="••••••"></div><button type="submit" class="btn-submit">Войти</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('login-modal')">Закрыть</button></form></div></div>
+        <div class="modal"><div class="modal-body"><form onsubmit="handleLogin(event)"><div class="form-group"><label>Email</label><input type="email" id="login-email" class="form-control" required></div><div class="form-group"><label>Пароль</label><input type="password" id="login-password" class="form-control" required></div><button type="submit" class="btn-submit">Войти</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('login-modal')">Закрыть</button></form></div></div>
     </div>
     <div class="modal-overlay" id="register-modal">
-        <div class="modal"><div class="modal-body"><form onsubmit="handleRegister(event)"><div class="form-group"><label>Email</label><input type="email" id="reg-email" class="form-control" required placeholder="name@mail.com"></div><div class="form-group"><label>Пароль</label><input type="password" id="reg-password" class="form-control" required minlength="6" placeholder="Минимум 6 символов"></div><button type="submit" class="btn-submit" style="background-color: #85bc24;">Создать аккаунт</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('register-modal')">Закрыть</button></form></div></div>
+        <div class="modal"><div class="modal-body"><form onsubmit="handleRegister(event)"><div class="form-group"><label>Email</label><input type="email" id="reg-email" class="form-control" required></div><div class="form-group"><label>Пароль</label><input type="password" id="reg-password" class="form-control" required minlength="6"></div><button type="submit" class="btn-submit" style="background-color: #85bc24;">Регистрация</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('register-modal')">Закрыть</button></form></div></div>
     </div>
 
     <script>
@@ -373,30 +358,34 @@
 
         let currentUser = JSON.parse(sessionStorage.getItem('session_user')) || null;
         let basket = []; 
-        let currentSport = 'cs2'; // Текущий выбранный фильтр
+        let currentSport = 'cs2';
 
-        // Раздельные демонстрационные данные по категориям
+        // УНИКАЛЬНЫЕ НАБОРЫ МАТЧЕЙ ДЛЯ КАЖДОЙ ВЫБРАННОЙ КАТЕГОРИИ
         const sportsFallbackData = {
             cs2: [
-                { id: 101, team1: "Cloud9", team2: "BetBoom Team", event: "BetBoom Dacha 2026", time: "LIVE", odd1: 1.90, odd2: 1.80 },
-                { id: 102, team1: "Natus Vincere", team2: "G2 Esports", event: "PGL Major", time: "Сегодня, 18:00", odd1: 1.55, odd2: 2.45 },
-                { id: 103, team1: "Team Spirit", team2: "FaZe Clan", event: "IEM Dallas", time: "Сегодня, 21:30", odd1: 1.40, odd2: 2.90 }
+                { id: 101, team1: "Natus Vincere", team2: "G2 Esports", event: "PGL Major 2026", time: "LIVE", odd1: 1.65, odd2: 2.25 },
+                { id: 102, team1: "Team Spirit", team2: "FaZe Clan", event: "IEM Katowice", time: "Сегодня, 19:00", odd1: 1.45, odd2: 2.80 },
+                { id: 103, team1: "Team Vitality", team2: "MOUZ", event: "ESL Pro League", time: "Завтра, 16:30", odd1: 1.52, odd2: 2.50 }
             ],
             dota2: [
-                { id: 201, team1: "Team Spirit", team2: "Gaimin Gladiators", event: "The International", time: "LIVE", odd1: 1.65, odd2: 2.10 },
-                { id: 202, team1: "BetBoom Team", team2: "Team Liquid", event: "Riyadh Masters", time: "Сегодня, 19:30", odd1: 1.85, odd2: 1.85 }
+                { id: 201, team1: "BetBoom Team", team2: "Team Liquid", event: "Riyadh Masters", time: "LIVE", odd1: 1.95, odd2: 1.85 },
+                { id: 202, team1: "Xtreme Gaming", team2: "Falcons", event: "The International 2026", time: "Сегодня, 21:00", odd1: 2.40, odd2: 1.57 },
+                { id: 203, team1: "Tundra Esports", team2: "Gaimin Gladiators", event: "DreamLeague", time: "Сегодня, 23:45", odd1: 2.10, odd2: 1.72 }
             ],
             football: [
-                { id: 301, team1: "Real Madrid", team2: "Barcelona", event: "La Liga", time: "Сегодня, 22:00", odd1: 2.10, odd2: 3.20 },
-                { id: 302, team1: "Manchester City", team2: "Liverpool", event: "Premier League", time: "Завтра, 17:00", odd1: 1.75, odd2: 4.10 }
+                { id: 301, team1: "Real Madrid", team2: "Barcelona", event: "Испания. Ла Лига", time: "LIVE", odd1: 2.15, oddX: 3.65, odd2: 3.10 },
+                { id: 302, team1: "Manchester City", team2: "Liverpool", event: "Англия. Премьер-Лига", time: "Сегодня, 22:45", odd1: 1.90, oddX: 3.80, odd2: 3.90 },
+                { id: 303, team1: "Bayern Munich", team2: "PSG", event: "Лига Чемпионов УЕФА", time: "Завтра, 22:00", odd1: 1.75, oddX: 4.00, odd2: 4.50 }
             ],
             basketball: [
-                { id: 401, team1: "Boston Celtics", team2: "Los Angeles Lakers", event: "NBA", time: "Завтра, 04:30", odd1: 1.35, odd2: 3.25 },
-                { id: 402, team1: "Real Madrid Basket", team2: "Anadolu Efes", event: "EuroLeague", time: "Сегодня, 20:45", odd1: 1.50, odd2: 2.60 }
+                { id: 401, team1: "Boston Celtics", team2: "Dallas Mavericks", event: "США. NBA", time: "Завтра, 03:30", odd1: 1.42, oddX: 15.0, odd2: 2.95 },
+                { id: 402, team1: "Los Angeles Lakers", team2: "Golden State Warriors", event: "США. NBA", time: "Завтра, 06:00", odd1: 1.85, oddX: 14.0, odd2: 1.95 },
+                { id: 403, team1: "Olympiacos", team2: "Panathinaikos", event: "Евролига", time: "Сегодня, 21:15", odd1: 1.60, oddX: 14.5, odd2: 2.40 }
             ],
             tennis: [
-                { id: 501, team1: "Alcaraz C.", team2: "Sinner J.", event: "Wimbledon", time: "LIVE", odd1: 1.80, odd2: 1.95 },
-                { id: 502, team1: "Djokovic N.", team2: "Medvedev D.", event: "US Open", time: "Завтра, 16:00", odd1: 1.45, odd2: 2.75 }
+                { id: 501, team1: "Alcaraz C.", team2: "Sinner J.", event: "ATP. Ролан Гаррос", time: "LIVE", odd1: 1.82, odd2: 1.98 },
+                { id: 502, team1: "Djokovic N.", team2: "Medvedev D.", event: "ATP. Уимблдон", time: "Сегодня, 17:15", odd1: 1.40, odd2: 3.00 },
+                { id: 503, team1: "Swiatek I.", team2: "Sabalenka A.", event: "WTA. Финал", time: "Завтра, 15:00", odd1: 1.55, odd2: 2.48 }
             ]
         };
 
@@ -405,12 +394,11 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
             if(tabName === 'line') {
                 document.getElementById('tab-line-btn').classList.add('active');
                 document.getElementById('tab-line').classList.add('active');
                 document.getElementById('bet-slip').style.display = 'block';
-            } else if(tabName === 'profile') {
+            } else {
                 document.getElementById('tab-profile-btn').classList.add('active');
                 document.getElementById('tab-profile').classList.add('active');
                 document.getElementById('bet-slip').style.display = 'none';
@@ -418,7 +406,6 @@
             }
         }
 
-        // Установка и переключение фильтра видов спорта
         function setSportFilter(sportCode) {
             currentSport = sportCode;
             document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
@@ -426,7 +413,6 @@
             
             const titles = { cs2: 'CS2 Линия', dota2: 'Dota 2 Линия', football: 'Футбольная линия', basketball: 'Баскетбольная линия', tennis: 'Теннисная линия' };
             document.getElementById('current-sport-title').innerText = titles[sportCode] || 'Матчи из линии';
-
             loadActualMatches(false);
         }
 
@@ -434,18 +420,14 @@
             if (currentUser) {
                 document.getElementById('auth-guest').style.display = 'none';
                 document.getElementById('auth-user').style.display = 'flex';
-                
                 document.getElementById('profile-unauth').style.display = 'none';
                 document.getElementById('profile-auth').style.display = 'block';
                 document.getElementById('profile-email').innerText = currentUser.email;
-
                 const users = DB.getUsers();
-                const userBalance = users[currentUser.email] ? users[currentUser.email].balance : 0;
-                document.getElementById('user-balance').innerText = userBalance.toLocaleString() + ' COIN';
+                document.getElementById('user-balance').innerText = (users[currentUser.email]?.balance || 0).toLocaleString() + ' COIN';
             } else {
                 document.getElementById('auth-guest').style.display = 'flex';
                 document.getElementById('auth-user').style.display = 'none';
-                
                 document.getElementById('profile-unauth').style.display = 'block';
                 document.getElementById('profile-auth').style.display = 'none';
             }
@@ -457,40 +439,53 @@
         function handleRegister(e) { 
             e.preventDefault(); 
             if(DB.saveUser(document.getElementById('reg-email').value, document.getElementById('reg-password').value)){ 
-                alert('Регистрация успешна!'); 
-                closeModal('register-modal'); 
-                openModal('login-modal'); 
-            } else { alert('Почта уже занята!'); } 
+                alert('Успешно!'); closeModal('register-modal'); openModal('login-modal'); 
+            } else { alert('Почта занята!'); } 
         }
         
         function handleLogin(e) { 
             e.preventDefault(); 
-            const u = DB.checkUser(document.getElementById('login-email').value, document.getElementById('login-password').value); 
-            if(u){ 
+            if(DB.checkUser(document.getElementById('login-email').value, document.getElementById('login-password').value)){ 
                 currentUser={email:document.getElementById('login-email').value}; 
                 sessionStorage.setItem('session_user', JSON.stringify(currentUser)); 
-                closeModal('login-modal'); 
-                updateUI(); 
-                renderHistory();
-            } else { alert('Неверные данные!'); } 
+                closeModal('login-modal'); updateUI(); renderHistory();
+            } else { alert('Ошибка входа!'); } 
         }
         
         function logout() { currentUser = null; sessionStorage.removeItem('session_user'); updateUI(); renderHistory(); }
-
-        function actionDeposit() { alert('Окно пополнения баланса в разработке.'); }
-        function actionWithdraw() { alert('Окно вывода средств в разработке.'); }
+        function actionDeposit() { alert('Окно пополнения в разработке.'); }
+        function actionWithdraw() { alert('Окно вывода в разработке.'); }
 
         function displayMatches(matches) {
             const container = document.getElementById('matches-container');
             if(matches.length === 0) {
-                container.innerHTML = `<div style='padding:20px;text-align:center;color:#aaa;'>В данный момент нет доступных матчей.</div>`;
+                container.innerHTML = `<div style='padding:20px;text-align:center;color:#aaa;'>Нет доступных событий.</div>`;
                 return;
             }
 
             container.innerHTML = matches.map(m => {
                 const activeBet = basket.find(b => b.matchId === m.id);
-                const isW1Active = activeBet && activeBet.outcome === 1;
-                const isW2Active = activeBet && activeBet.outcome === 2;
+                
+                // Рендер кнопок под разные форматы (с ничьей Х или без неё)
+                let oddsHTML = `
+                    <button class="odds-btn ${activeBet && activeBet.outcome === '1' ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} - ${m.team2}', '${m.team1}', ${m.odd1}, '1')">
+                        <span class="outcome-type">Поб. 1</span><span class="odds-val">${m.odd1}</span>
+                    </button>
+                `;
+
+                if (m.oddX) {
+                    oddsHTML += `
+                        <button class="odds-btn ${activeBet && activeBet.outcome === 'X' ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} - ${m.team2}', 'Ничья', ${m.oddX}, 'X')">
+                            <span class="outcome-type">Ничья X</span><span class="odds-val">${m.oddX}</span>
+                        </button>
+                    `;
+                }
+
+                oddsHTML += `
+                    <button class="odds-btn ${activeBet && activeBet.outcome === '2' ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} - ${m.team2}', '${m.team2}', ${m.odd2}, '2')">
+                        <span class="outcome-type">Поб. 2</span><span class="odds-val">${m.odd2}</span>
+                    </button>
+                `;
 
                 return `
                 <div class="match-card">
@@ -501,63 +496,16 @@
                     <div class="match-main">
                         <div class="team-row"><div class="team-info"><span class="team-logo-placeholder"></span> ${m.team1}</div></div>
                         <div class="team-row" style="margin-top: 5px;"><div class="team-info"><span class="team-logo-placeholder"></span> ${m.team2}</div></div>
-                        
-                        <div class="odds-row">
-                            <button class="odds-btn ${isW1Active ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} vs ${m.team2}', '${m.team1}', ${m.odd1}, 1)">
-                                <span class="outcome-type">Поб. 1</span>
-                                <span class="odds-val">${m.odd1}</span>
-                            </button>
-                            <button class="odds-btn ${isW2Active ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} vs ${m.team2}', '${m.team2}', ${m.odd2}, 2)">
-                                <span class="outcome-type">Поб. 2</span>
-                                <span class="odds-val">${m.odd2}</span>
-                            </button>
-                        </div>
+                        <div class="odds-row">${oddsHTML}</div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        function renderHistory() {
-            const container = document.getElementById('history-container');
-            if (!currentUser) { container.innerHTML = ''; return; }
-
-            const users = DB.getUsers();
-            const history = users[currentUser.email]?.history || [];
-
-            if (history.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:20px;">У вас пока нет заключенных пари</div>`;
-                return;
-            }
-
-            container.innerHTML = history.map(bet => `
-                <div class="history-item">
-                    <div class="history-item-header">
-                        <span>Тип: <strong>${bet.type}</strong></span>
-                        <span>${bet.date}</span>
-                    </div>
-                    <div class="history-item-body">
-                        ${bet.items.map(item => `
-                            <div class="history-sub-match">
-                                <div class="history-sub-title">${item.matchName}</div>
-                                <div>Выбор: <strong>Победа ${item.teamName}</strong> (Кэф: ${item.odds})</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="history-item-footer">
-                        <div>Пари: <strong>${bet.amount} COIN</strong> @ <span style="color:#f5fe00; font-weight:bold;">${bet.totalOdds}</span></div>
-                        <span class="status-badge">В игре</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
         function addToSlip(matchId, matchName, teamName, odds, outcome) {
             basket = basket.filter(item => item.matchId !== matchId);
             basket.push({ matchId, matchName, teamName, odds, outcome });
-
-            if(basket.length === 1) {
-                document.getElementById('slip-body').classList.add('open');
-            }
+            if(basket.length === 1) document.getElementById('slip-body').classList.add('open');
             renderSlip();
             loadActualMatches(false); 
         }
@@ -578,7 +526,7 @@
 
             const container = document.getElementById('slip-items-container');
             if(basket.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:10px;">Купон пуст. Выберите исход.</div>`;
+                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:10px;">Купон пуст. Измените фильтр или выберите исход.</div>`;
                 document.getElementById('place-bet-btn').disabled = true;
                 calculateSlip();
                 return;
@@ -588,7 +536,7 @@
                 <div class="slip-item">
                     <div class="slip-item-details">
                         <div class="slip-item-teams">${item.matchName}</div>
-                        <div class="slip-item-bet">Победа: ${item.teamName} <span style="color:#f5fe00;margin-left:5px;">Кэф: ${item.odds}</span></div>
+                        <div class="slip-item-bet">Выбор: ${item.teamName} <span style="color:#f5fe00;margin-left:5px;">Кэф: ${item.odds}</span></div>
                     </div>
                     <button class="slip-item-delete" onclick="removeFromSlip(${item.matchId})">&times;</button>
                 </div>
@@ -604,38 +552,27 @@
                 document.getElementById('summary-win').innerText = '0 COIN';
                 return;
             }
-
             let totalOdds = 1;
-            if(basket.length === 1) { totalOdds = basket[0].odds; } 
-            else { basket.forEach(item => totalOdds *= item.odds); }
-
+            basket.forEach(item => totalOdds *= item.odds);
             const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
-            const potentialWin = amount * totalOdds;
-
             document.getElementById('summary-odds').innerText = totalOdds.toFixed(2);
-            document.getElementById('summary-win').innerText = Math.floor(potentialWin).toLocaleString() + ' COIN';
+            document.getElementById('summary-win').innerText = Math.floor(amount * totalOdds).toLocaleString() + ' COIN';
         }
 
         function submitBetSlip() {
-            if (!currentUser) { alert('Пожалуйста, войдите в аккаунт!'); return; }
-
+            if (!currentUser) { alert('Войдите в систему!'); return; }
             const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
-            if(amount < 10) { alert('Минимальная сумма — 10 COIN'); return; }
+            if(amount < 10) { alert('Мин. сумма пари — 10 COIN'); return; }
 
             const users = DB.getUsers();
-            const currentBalance = users[currentUser.email].balance;
-            if (currentBalance < amount) { alert('Недостаточно средств!'); return; }
+            if (users[currentUser.email].balance < amount) { alert('Недостаточно коинов!'); return; }
 
             let totalOdds = 1;
-            if(basket.length === 1) { totalOdds = basket[0].odds; } 
-            else { basket.forEach(item => totalOdds *= item.odds); }
-
-            const now = new Date();
-            const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            basket.forEach(item => totalOdds *= item.odds);
             
             const newBet = {
                 type: basket.length > 1 ? 'Экспресс' : 'Ординар',
-                date: formattedDate,
+                date: new Date().toLocaleString(),
                 amount: amount,
                 totalOdds: totalOdds.toFixed(2),
                 items: [...basket]
@@ -645,25 +582,38 @@
             localStorage.setItem('users', JSON.stringify(users));
             DB.saveBet(currentUser.email, newBet);
 
-            alert('Пари успешно заключено! Проверить его можно во вкладке "Мои пари".');
-            
+            alert('Пари успешно принято!');
             basket = [];
-            renderSlip();
-            updateUI();
-            loadActualMatches(false);
+            renderSlip(); updateUI(); loadActualMatches(false);
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            if (!currentUser) { container.innerHTML = ''; return; }
+            const history = DB.getUsers()[currentUser.email]?.history || [];
+
+            if (history.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:20px;">История пуста</div>`;
+                return;
+            }
+            container.innerHTML = history.map(bet => `
+                <div class="history-item">
+                    <div class="history-item-header"><span>${bet.type}</span><span>${bet.date}</span></div>
+                    <div class="history-item-body">
+                        ${bet.items.map(i => `<div class="history-sub-match"><div class="history-sub-title">${i.matchName}</div><div>Выбор: <strong>${i.teamName}</strong> (${i.odds})</div></div>`).join('')}
+                    </div>
+                    <div class="history-item-footer"><div>Сумма: <strong>${bet.amount}</strong> @ <span style="color:#f5fe00;">${bet.totalOdds}</span></div><span class="status-badge">В игре</span></div>
+                </div>
+            `).join('');
         }
 
         async function loadActualMatches(initial = true) {
             try {
-                // Пытаемся стучаться на бэкенд с параметром категории
                 const response = await fetch(`${API_URL}?sport=${currentSport}`);
                 if (!response.ok) throw new Error();
-                const fetchedMatches = await response.json();
-                displayMatches(fetchedMatches);
+                displayMatches(await response.json());
             } catch (error) {
-                // Если бэкенд недоступен (например, на GitHub Pages), берем подготовленный Fallback массив под текущий спорт
-                const localData = sportsFallbackData[currentSport] || [];
-                displayMatches(localData);
+                displayMatches(sportsFallbackData[currentSport] || []);
             }
             if(initial) renderSlip();
         }
