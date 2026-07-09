@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTOBET</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1b1e22;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            padding-bottom: 120px; /* Отступ для купона снизу */
+        }
+        .navbar {
+            background-color: #2d3136;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #f5fe00; /* Желтый цвет */
+        }
+        .brand {
+            font-weight: bold;
+            font-size: 16px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .brand span { color: #f5fe00; }
+        .auth-buttons { display: flex; gap: 8px; }
+        .btn {
+            border: none;
+            padding: 6px 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .btn-login {
+            background-color: #383d44;
+            color: #fff;
+            border: 1px solid #4f5660;
+        }
+        .btn-register {
+            background-color: #e58e26;
+            color: #fff;
+        }
+        .user-panel { display: flex; align-items: center; gap: 12px; }
+        .balance-box {
+            background: #23262a;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #383d44;
+            font-size: 13px;
+        }
+        .balance-value { color: #f5fe00; font-weight: bold; }
+        .logout-btn {
+            background: none; border: none; color: #ff4d4d;
+            cursor: pointer; font-size: 12px; padding: 0; text-decoration: underline;
+        }
+        
+        /* Вкладки навигации (Линия / Профиль) */
+        .tabs-nav {
+            display: flex;
+            background: #23262a;
+            border-bottom: 1px solid #383d44;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: #f5fe00;
+            border-bottom: 2px solid #f5fe00;
+            background: #2d3136;
+        }
+
+        /* Контентные секции */
+        .tab-content { display: none; padding: 15px; }
+        .tab-content.active { display: block; }
+
+        /* Модальные окна */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal {
+            background: #2d3136; width: 100%; max-width: 360px;
+            border-radius: 8px; overflow: hidden; border: 1px solid #383d44;
+        }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 12px; }
+        .form-control {
+            width: 100%; background: #1b1e22; border: 1px solid #383d44;
+            padding: 10px; border-radius: 4px; color: #fff;
+        }
+        .btn-submit { width: 100%; background: #4a90e2; color: white; padding: 10px; margin-top: 10px; }
+
+        /* Матчи и Стили элементов */
+        .filter-bar {
+            background: #2d3136; padding: 10px; border-radius: 4px;
+            margin-bottom: 15px; display: flex; align-items: center; font-size: 12px; color: #aaa;
+        }
+        .filter-tag {
+            background: #1b1e22; padding: 4px 8px; border-radius: 3px;
+            color: #fff; margin-left: 10px; display: flex; align-items: center; gap: 5px; border: 1px solid #383d44;
+        }
+        .filter-tag::before { content: "●"; color: #f5fe00; }
+        .section-title {
+            font-size: 14px; text-transform: uppercase; color: #94a3b8;
+            margin-bottom: 10px; font-weight: 600; border-left: 3px solid #f5fe00; padding-left: 8px;
+        }
+
+        .matches-list { display: flex; flex-direction: column; gap: 10px; }
+        .match-card { background: #2d3136; border-radius: 4px; border: 1px solid #383d44; overflow: hidden; }
+        .match-meta {
+            background: #23262a; padding: 6px 12px; font-size: 11px; color: #aaa;
+            display: flex; justify-content: space-between;
+        }
+        .event-name { color: #aaa; font-weight: 500; }
+        .match-main { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .team-row { display: flex; justify-content: space-between; align-items: center; }
+        .team-info { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }
+        .team-logo-placeholder { width: 20px; height: 20px; background: #475569; border-radius: 3px; }
+        
+        .odds-row { display: flex; gap: 10px; margin-top: 5px; border-top: 1px solid #383d44; padding-top: 10px; }
+        .odds-btn {
+            flex: 1; background: #23262a; border: 1px solid #383d44; color: #fff;
+            padding: 8px; border-radius: 4px; cursor: pointer; display: flex;
+            justify-content: space-between; align-items: center; font-size: 13px;
+        }
+        .odds-btn:hover { border-color: #f5fe00; }
+        .odds-btn.active { background: #373e21; border-color: #f5fe00; }
+        .odds-btn .outcome-type { color: #aaa; font-size: 11px; }
+        .odds-btn .odds-val { color: #f5fe00; font-weight: bold; }
+
+        /* Купон ставок (Нижняя панель) */
+        .bet-slip-panel {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #23262a; border-top: 2px solid #383d44;
+            z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+        .slip-header {
+            background: #2d3136; padding: 10px 15px; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
+            border-bottom: 1px solid #383d44;
+        }
+        .slip-title { font-weight: bold; display: flex; gap: 8px; align-items: center; }
+        .slip-badge { background: #f5fe00; color: #000; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .slip-body { display: none; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .slip-body.open { display: block; }
+        
+        .slip-item {
+            background: #1b1e22; padding: 8px 10px; border-radius: 4px;
+            margin-bottom: 8px; border-left: 3px solid #f5fe00;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .slip-item-details { flex: 1; }
+        .slip-item-teams { font-size: 12px; color: #aaa; }
+        .slip-item-bet { font-weight: bold; margin-top: 2px; }
+        .slip-item-delete { background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 16px; }
+
+        .slip-summary { background: #2d3136; padding: 12px; border-radius: 4px; margin-top: 10px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+        .slip-input-group { display: flex; gap: 10px; margin-top: 10px; }
+        .slip-input {
+            flex: 1; background: #1b1e22; border: 1px solid #4f5660;
+            padding: 8px; border-radius: 4px; color: #fff; font-weight: bold; text-align: center;
+        }
+        .btn-bet-submit {
+            background: #f5fe00; color: #000; font-weight: bold;
+            padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer;
+            text-transform: uppercase; font-size: 13px;
+        }
+        .btn-bet-submit:disabled { background: #4f5660; color: #888; cursor: not-allowed; }
+
+        /* СТИЛИ ДЛЯ ЛИЧНОГО КАБИНЕТА */
+        .profile-card {
+            background: #2d3136; padding: 15px; border-radius: 6px;
+            border: 1px solid #383d44; margin-bottom: 20px;
+        }
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        .history-item {
+            background: #2d3136; border: 1px solid #383d44; border-radius: 6px; overflow: hidden;
+        }
+        .history-item-header {
+            background: #23262a; padding: 8px 12px; font-size: 12px;
+            display: flex; justify-content: space-between; color: #aaa; border-bottom: 1px solid #383d44;
+        }
+        .history-item-body { padding: 12px; }
+        .history-sub-match {
+            border-left: 2px solid #f5fe00; padding-left: 8px; margin-bottom: 8px; font-size: 13px;
+        }
+        .history-sub-match:last-child { margin-bottom: 0; }
+        .history-sub-title { color: #aaa; font-size: 11px; }
+        .history-item-footer {
+            background: #23262a; padding: 10px 12px; font-size: 13px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #383d44;
+        }
+        .status-badge {
+            background: #e58e26; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация верхняя -->
+    <div class="navbar">
+        <div class="brand">CRYPTO<span>BET</span></div>
+        
+        <div class="auth-buttons" id="auth-guest">
+            <button class="btn btn-login" onclick="openModal('login-modal')">Вход</button>
+            <button class="btn btn-register" onclick="openModal('register-modal')">Рега</button>
+        </div>
+
+        <div class="user-panel" id="auth-user" style="display: none;">
+            <div class="balance-box"><span class="balance-value" id="user-balance">0 COIN</span></div>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
+        </div>
+    </div>
+
+    <!-- Переключатель вкладок -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" id="tab-line-btn" onclick="switchTab('line')">Линия</button>
+        <button class="tab-btn" id="tab-profile-btn" onclick="switchTab('profile')">Мои пари</button>
+    </div>
+
+    <!-- ВКЛАДКА 1: ЛИНИЯ МАТЧЕЙ -->
+    <div id="tab-line" class="tab-content active">
+        <div class="filter-bar">
+            ЛИНИИ
+            <div class="filter-tag">CyberSport CS2</div>
+        </div>
+        <div class="section-title">Матчи из линии</div>
+        <div class="matches-list" id="matches-container">
+            <div style='padding:20px;text-align:center;color:#aaa;'>Загрузка линии...</div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 2: ЛИЧНЫЙ КАБИНЕТ И ИСТОРИЯ ПАРИ -->
+    <div id="tab-profile" class="tab-content">
+        <div class="section-title">Личный кабинет</div>
+        
+        <!-- Панель профиля если не авторизован -->
+        <div id="profile-unauth" style="text-align: center; padding: 4px 0; color: #aaa;">
+            <p>Пожалуйста, войдите в аккаунт, чтобы просмотреть профиль и историю заключенных пари.</p>
+            <button class="btn btn-register" onclick="openModal('login-modal')">Войти прямо сейчас</button>
+        </div>
+
+        <!-- Панель профиля если авторизован -->
+        <div id="profile-auth" style="display: none;">
+            <div class="profile-card">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;" id="profile-email">user@domain.com</div>
+                <div style="color: #aaa;">Статус аккаунта: <span style="color:#85bc24; font-weight: bold;">Подтвержден</span></div>
+            </div>
+
+            <div class="section-title">История Ваших пари</div>
+            <div class="history-list" id="history-container">
+                <!-- Пари загрузятся сюда -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Купон ставок (Фиксированный снизу) -->
+    <div class="bet-slip-panel" id="bet-slip">
+        <div class="slip-header" onclick="toggleSlip()">
+            <div class="slip-title">
+                Купон пари <span class="slip-badge" id="slip-count">0</span>
+            </div>
+            <div id="slip-type-text" style="color: #f5fe00; font-weight: bold; font-size: 12px;">Ординар</div>
+        </div>
+        <div class="slip-body" id="slip-body">
+            <div id="slip-items-container"></div>
+            
+            <div class="slip-summary">
+                <div class="summary-row"><span>Тип пари:</span><strong id="summary-type">Ординар</strong></div>
+                <div class="summary-row"><span>Общий коэффициент:</span><strong style="color: #f5fe00;" id="summary-odds">0.00</strong></div>
+                <div class="summary-row"><span>Возможный выигрыш:</span><strong style="color: #85bc24;" id="summary-win">0 COIN</strong></div>
+                
+                <div class="slip-input-group">
+                    <input type="number" id="bet-amount" class="slip-input" placeholder="Сумма пари" value="100" oninput="calculateSlip()">
+                    <button class="btn-bet-submit" id="place-bet-btn" onclick="submitBetSlip()" disabled>Заключить пари</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалки -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal"><div class="modal-body"><form onsubmit="handleLogin(event)"><div class="form-group"><label>Email</label><input type="email" id="login-email" class="form-control" required placeholder="name@mail.com"></div><div class="form-group"><label>Пароль</label><input type="password" id="login-password" class="form-control" required placeholder="••••••"></div><button type="submit" class="btn-submit">Войти</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('login-modal')">Закрыть</button></form></div></div>
+    </div>
+    <div class="modal-overlay" id="register-modal">
+        <div class="modal"><div class="modal-body"><form onsubmit="handleRegister(event)"><div class="form-group"><label>Email</label><input type="email" id="reg-email" class="form-control" required placeholder="name@mail.com"></div><div class="form-group"><label>Пароль</label><input type="password" id="reg-password" class="form-control" required minlength="6" placeholder="Минимум 6 символов"></div><button type="submit" class="btn-submit" style="background-color: #85bc24;">Создать аккаунт</button><button type="button" class="btn-submit" style="background:#4f5660; margin-top:5px;" onclick="closeModal('register-modal')">Закрыть</button></form></div></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        const DB = {
+            getUsers: () => JSON.parse(localStorage.getItem('users')) || {},
+            saveUser: (email, password) => {
+                const users = DB.getUsers();
+                if (users[email]) return false;
+                users[email] = { password: password, balance: 5000, history: [] };
+                localStorage.setItem('users', JSON.stringify(users));
+                return true;
+            },
+            checkUser: (email, password) => {
+                const users = DB.getUsers();
+                return users[email] && users[email].password === password ? users[email] : null;
+            },
+            saveBet: (email, betData) => {
+                const users = DB.getUsers();
+                if(users[email]) {
+                    if(!users[email].history) users[email].history = [];
+                    users[email].history.unshift(betData);
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            }
+        };
+
+        let currentUser = JSON.parse(sessionStorage.getItem('session_user')) || null;
+        let basket = []; 
+
+        const betboomMatchesFallback = [
+            { id: 101, team1: "Cloud9", team2: "BetBoom Team", event: "BetBoom Dacha 2026", time: "LIVE", odd1: 1.90, odd2: 1.80 },
+            { id: 102, team1: "Natus Vincere", team2: "G2 Esports", event: "PGL Major", time: "Сегодня, 18:00", odd1: 1.55, odd2: 2.45 },
+            { id: 103, team1: "Team Spirit", team2: "FaZe Clan", event: "IEM Dallas", time: "Сегодня, 21:30", odd1: 1.40, odd2: 2.90 },
+            { id: 104, team1: "Virtus.pro", team2: "MOUZ", event: "ESL Pro League", time: "Завтра, 14:00", odd1: 2.15, odd2: 1.70 }
+        ];
+
+        const API_URL = "http://localhost:8000/api/matches"; 
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if(tabName === 'line') {
+                document.getElementById('tab-line-btn').classList.add('active');
+                document.getElementById('tab-line').classList.add('active');
+                document.getElementById('bet-slip').style.display = 'block';
+            } else if(tabName === 'profile') {
+                document.getElementById('tab-profile-btn').classList.add('active');
+                document.getElementById('tab-profile').classList.add('active');
+                document.getElementById('bet-slip').style.display = 'none';
+                renderHistory();
+            }
+        }
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('auth-guest').style.display = 'none';
+                document.getElementById('auth-user').style.display = 'flex';
+                
+                document.getElementById('profile-unauth').style.display = 'none';
+                document.getElementById('profile-auth').style.display = 'block';
+                document.getElementById('profile-email').innerText = currentUser.email;
+
+                const users = DB.getUsers();
+                const userBalance = users[currentUser.email] ? users[currentUser.email].balance : 0;
+                document.getElementById('user-balance').innerText = userBalance.toLocaleString() + ' COIN';
+            } else {
+                document.getElementById('auth-guest').style.display = 'flex';
+                document.getElementById('auth-user').style.display = 'none';
+                
+                document.getElementById('profile-unauth').style.display = 'block';
+                document.getElementById('profile-auth').style.display = 'none';
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        function handleRegister(e) { 
+            e.preventDefault(); 
+            if(DB.saveUser(document.getElementById('reg-email').value, document.getElementById('reg-password').value)){ 
+                alert('Регистрация успешна!'); 
+                closeModal('register-modal'); 
+                openModal('login-modal'); 
+            } else { alert('Почта уже занята!'); } 
+        }
+        
+        function handleLogin(e) { 
+            e.preventDefault(); 
+            const u = DB.checkUser(document.getElementById('login-email').value, document.getElementById('login-password').value); 
+            if(u){ 
+                currentUser={email:document.getElementById('login-email').value}; 
+                sessionStorage.setItem('session_user', JSON.stringify(currentUser)); 
+                closeModal('login-modal'); 
+                updateUI(); 
+                renderHistory();
+            } else { alert('Неверные данные!'); } 
+        }
+        
+        function logout() { currentUser = null; sessionStorage.removeItem('session_user'); updateUI(); renderHistory(); }
+
+        function displayMatches(matches) {
+            const container = document.getElementById('matches-container');
+            container.innerHTML = matches.map(m => {
+                const activeBet = basket.find(b => b.matchId === m.id);
+                const isW1Active = activeBet && activeBet.outcome === 1;
+                const isW2Active = activeBet && activeBet.outcome === 2;
+
+                return `
+                <div class="match-card">
+                    <div class="match-meta">
+                        <span class="event-name">${m.event}</span>
+                        <span style="color: ${m.time === 'LIVE' ? '#f5fe00' : '#aaa'}; font-weight: bold;">${m.time}</span>
+                    </div>
+                    <div class="match-main">
+                        <div class="team-row"><div class="team-info"><span class="team-logo-placeholder"></span> ${m.team1}</div></div>
+                        <div class="team-row" style="margin-top: 5px;"><div class="team-info"><span class="team-logo-placeholder"></span> ${m.team2}</div></div>
+                        
+                        <div class="odds-row">
+                            <button class="odds-btn ${isW1Active ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} vs ${m.team2}', '${m.team1}', ${m.odd1}, 1)">
+                                <span class="outcome-type">Поб. 1</span>
+                                <span class="odds-val">${m.odd1}</span>
+                            </button>
+                            <button class="odds-btn ${isW2Active ? 'active' : ''}" onclick="addToSlip(${m.id}, '${m.team1} vs ${m.team2}', '${m.team2}', ${m.odd2}, 2)">
+                                <span class="outcome-type">Поб. 2</span>
+                                <span class="odds-val">${m.odd2}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            if (!currentUser) { container.innerHTML = ''; return; }
+
+            const users = DB.getUsers();
+            const history = users[currentUser.email]?.history || [];
+
+            if (history.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:20px;">У вас пока нет заключенных пари</div>`;
+                return;
+            }
+
+            container.innerHTML = history.map(bet => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <span>Тип: <strong>${bet.type}</strong></span>
+                        <span>${bet.date}</span>
+                    </div>
+                    <div class="history-item-body">
+                        ${bet.items.map(item => `
+                            <div class="history-sub-match">
+                                <div class="history-sub-title">${item.matchName}</div>
+                                <div>Выбор: <strong>Победа ${item.teamName}</strong> (Кэф: ${item.odds})</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="history-item-footer">
+                        <div>Пари: <strong>${bet.amount} COIN</strong> @ <span style="color:#f5fe00; font-weight:bold;">${bet.totalOdds}</span></div>
+                        <span class="status-badge">В игре</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToSlip(matchId, matchName, teamName, odds, outcome) {
+            basket = basket.filter(item => item.matchId !== matchId);
+            basket.push({ matchId, matchName, teamName, odds, outcome });
+
+            if(basket.length === 1) {
+                document.getElementById('slip-body').classList.add('open');
+            }
+            renderSlip();
+            loadActualMatches(false); 
+        }
+
+        function removeFromSlip(matchId) {
+            basket = basket.filter(item => item.matchId !== matchId);
+            renderSlip();
+            loadActualMatches(false);
+        }
+
+        function toggleSlip() { document.getElementById('slip-body').classList.toggle('open'); }
+
+        function renderSlip() {
+            document.getElementById('slip-count').innerText = basket.length;
+            const typeText = basket.length > 1 ? `Экспресс (${basket.length})` : 'Ординар';
+            document.getElementById('slip-type-text').innerText = typeText;
+            document.getElementById('summary-type').innerText = typeText;
+
+            const container = document.getElementById('slip-items-container');
+            if(basket.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#aaa; padding:10px;">Купон пуст. Выберите исход.</div>`;
+                document.getElementById('place-bet-btn').disabled = true;
+                calculateSlip();
+                return;
+            }
+
+            container.innerHTML = basket.map(item => `
+                <div class="slip-item">
+                    <div class="slip-item-details">
+                        <div class="slip-item-teams">${item.matchName}</div>
+                        <div class="slip-item-bet">Победа: ${item.teamName} <span style="color:#f5fe00;margin-left:5px;">Кэф: ${item.odds}</span></div>
+                    </div>
+                    <button class="slip-item-delete" onclick="removeFromSlip(${item.matchId})">&times;</button>
+                </div>
+            `).join('');
+
+            document.getElementById('place-bet-btn').disabled = false;
+            calculateSlip();
+        }
+
+        function calculateSlip() {
+            if(basket.length === 0) {
+                document.getElementById('summary-odds').innerText = '0.00';
+                document.getElementById('summary-win').innerText = '0 COIN';
+                return;
+            }
+
+            let totalOdds = 1;
+            if(basket.length === 1) { totalOdds = basket[0].odds; } 
+            else { basket.forEach(item => totalOdds *= item.odds); }
+
+            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+            const potentialWin = amount * totalOdds;
+
+            document.getElementById('summary-odds').innerText = totalOdds.toFixed(2);
+            document.getElementById('summary-win').innerText = Math.floor(potentialWin).toLocaleString() + ' COIN';
+        }
+
+        function submitBetSlip() {
+            if (!currentUser) { alert('Пожалуйста, войдите в аккаунт!'); return; }
+
+            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+            if(amount < 10) { alert('Минимальная сумма — 10 COIN'); return; }
+
+            const users = DB.getUsers();
+            const currentBalance = users[currentUser.email].balance;
+            if (currentBalance < amount) { alert('Недостаточно средств!'); return; }
+
+            let totalOdds = 1;
+            if(basket.length === 1) { totalOdds = basket[0].odds; } 
+            else { basket.forEach(item => totalOdds *= item.odds); }
+
+            const now = new Date();
+            const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            
+            const newBet = {
+                type: basket.length > 1 ? 'Экспресс' : 'Ординар',
+                date: formattedDate,
+                amount: amount,
+                totalOdds: totalOdds.toFixed(2),
+                items: [...basket]
+            };
+
+            users[currentUser.email].balance -= amount;
+            localStorage.setItem('users', JSON.stringify(users));
+            DB.saveBet(currentUser.email, newBet);
+
+            alert('Пари успешно заключено! Проверить его можно во вкладке "Мои пари".');
+            
+            basket = [];
+            renderSlip();
+            updateUI();
+            loadActualMatches(false);
+        }
+
+        async function loadActualMatches(initial = true) {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error();
+                const fetchedMatches = await response.json();
+                displayMatches(fetchedMatches);
+            } catch (error) {
+                displayMatches(betboomMatchesFallback);
+            }
+            if(initial) renderSlip();
+        }
+
+        loadActualMatches(true);
+        updateUI();
+        setInterval(() => loadActualMatches(false), 30000);
+    </script>
+</body>
+</html>
